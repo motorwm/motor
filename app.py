@@ -1,6 +1,9 @@
+from flask import Flask, request, jsonify
 import requests
 import numpy as np
 from datetime import datetime
+
+app = Flask(__name__)
 
 # ======================
 # 🔧 Configuración inicial
@@ -106,7 +109,7 @@ def evaluar_cliente(data):
         return {"rechazado": True, "motivo": "bcra", "explicacion": f"Situación crediticia > 1 en el último mes: {sit_max_1m}"}
 
     pyp = requests.get(
-        f"https://www.pypdatos.com.ar:469/wayni/rest/serviciospyp/persona/waynimv/57ynbdnr/{dni}/m/json", timeout=10
+        f"https://www.pypdatos.com.ar:469/wayni/rest/serviciospyp/persona/waynimv/57ynbdnr/{dni}/m/json", timeout=10, verify= False
     ).json()
     persona = pyp["RESULTADO"]["persona"]["row"]
 
@@ -148,15 +151,12 @@ def evaluar_cliente(data):
     }
 
     logit = sum(variables[k] * COEFICIENTES[k] for k in COEFICIENTES)
-    p = 1- (1 / (1 + np.exp(-logit)))
+    p = 1-(1 / (1 + np.exp(-logit)))
     score_final = round(p * 1000, 2)
     riesgo = nivel_riesgo(score_final)
 
     oferta = CONDICIONES_OFERTA.get(riesgo)
-    if oferta:
-        cuota_max = round(oferta["rci"] * estimador*0.82, 2)
-    else:
-        cuota_max = 0
+    cuota_max = round(oferta["rci"] * estimador, 2) if oferta else 0
 
     return {
         "rechazado": False,
@@ -173,18 +173,16 @@ def evaluar_cliente(data):
     }
 
 # ======================
-# 🚀 Ejecución local
+# 🚀 Endpoint Flask
 # ======================
+@app.route("/evaluar", methods=["POST"])
+def endpoint_evaluar():
+    try:
+        data = request.get_json()
+        resultado = evaluar_cliente(data)
+        return jsonify(resultado)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
-    datos = {
-        "cuil": "20320062099",
-        "birthdate": "1985-12-18",
-        "sexo": "M",
-        "document_number": "32006209",
-        "cellphone": "1122334455",
-        "email_address": "test@example.com",
-        "bank-code-default": "017"
-    }
-    resultado = evaluar_cliente(datos)
-    print("\n✅ Resultado final:")
-    print(resultado)
+    app.run(debug=True)
