@@ -127,8 +127,8 @@ def evaluar_cliente(data):
 
     if consultas > 5:
         return {"rechazado": True, "motivo": "nosis", "explicacion": f"Cantidad de consultas en Nosis > 5: {consultas}"}
-    if score < 190:
-        return {"rechazado": True, "motivo": "nosis", "explicacion": f"Score Nosis menor a 190: {score}"}
+    if score < 235:
+        return {"rechazado": True, "motivo": "nosis", "explicacion": f"Score Nosis menor a 235: {score}"}
     if referencias > 1:
         return {"rechazado": True, "motivo": "nosis", "explicacion": f"Referencias comerciales mayores a 1: {referencias}"}
 
@@ -156,7 +156,7 @@ def evaluar_cliente(data):
     riesgo = nivel_riesgo(score_final)
 
     oferta = CONDICIONES_OFERTA.get(riesgo)
-    cuota_max = round(oferta["rci"] * estimador, 2) if oferta else 0
+    cuota_max = round(oferta["rci"] * estimador*0.82, 2) if oferta else 0
 
     return {
         "rechazado": False,
