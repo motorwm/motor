@@ -109,7 +109,7 @@ def evaluar_cliente(data):
         return {"rechazado": True, "motivo": "bcra", "explicacion": f"Situación crediticia > 1 en el último mes: {sit_max_1m}"}
 
     pyp = requests.get(
-        f"https://www.pypdatos.com.ar:469/wayni/rest/serviciospyp/persona/waynimv/57ynbdnr/{dni}/m/json", timeout=10, verify= False
+        f"https://www.pypdatos.com.ar:469/wayni/rest/serviciospyp/persona/waynimv/57ynbdnr/{dni}/{sexo}/json", timeout=10, verify= False
     ).json()
     persona = pyp["RESULTADO"]["persona"]["row"]
 
