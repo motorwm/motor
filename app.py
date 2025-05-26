@@ -155,8 +155,15 @@ def evaluar_cliente(data):
     score_final = round(p * 1000, 2)
     riesgo = nivel_riesgo(score_final)
 
+    if riesgo == "Out":
+        return {
+            "rechazado": True,
+            "motivo": "modelo",
+            "explicacion": f"Nivel de riesgo 'Out' según score calculado: {score_final}"
+        }
+
     oferta = CONDICIONES_OFERTA.get(riesgo)
-    cuota_max = round(oferta["rci"] * estimador*0.82, 2) if oferta else 0
+    cuota_max = round(oferta["rci"] * estimador, 2) if oferta else 0
 
     return {
         "rechazado": False,
